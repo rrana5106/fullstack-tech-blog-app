@@ -1,91 +1,112 @@
-# Full Stack Application with Node, Express, Sequelize, and Authentication
+# Full Stack Tech Blog Application
 
-## Challenge
+A REST API and simple web front end for a blogging platform. Users can register, log in, and manage their own blog posts, and any visitor can browse posts filtered by category.
 
-In this challenge, you have a full stack application built with **Node.js**, **Express**, **Sequelize**, and **JWT authentication**. The code is structured into logical folders using modules.
+- **Live demo:** _[add your Render URL here after deploying]_
+- **GitHub repo:** https://github.com/rrana5106/fullstack-tech-blog-app
 
-Your challenge is to:
+## Features
 
-1. **Get the application running** following the installation steps.
-2. **Test the application** to ensure it works as expected.
-3. **Answer the following questions:**
+- Register, log in, and log out using JWT-based authentication.
+- Create, read, update, and delete your own blog posts.
+- Browse all posts, or filter posts by category.
+- Only the author of a post can edit or delete it.
 
-   - What is happening in `models/index.js`?
-   - In `models/user.js`, there are hooks at the bottom of the model definition. What do these do?
-   - Where are all the routes for the API defined?
-   - If you wanted to create a new route called `/api/students`, which file(s) would you need to update?
-   - If you had additional data besides user data that you'd like to store in the JWT, how could you do that? Which file would you need to update?
+## Technologies Used
 
-## Key Learnings
+- **Node.js** / **Express** — REST API server
+- **Sequelize** / **MySQL** — data persistence
+- **jsonwebtoken** + **bcrypt** — authentication and password hashing
+- **Vanilla HTML/CSS/JS** — front end (`public/`)
 
-- How a full stack application using **Node.js, Express, Sequelize, and JWT authentication** is structured.
-- The complete **JWT authentication lifecycle**, including signing and route protection.
-- How Sequelize models, hooks, and associations work.
-- How to modify and extend a full stack application by adding new routes and modifying authentication.
+## Project Structure
 
-## User Story
-
-_As a developer, I want to understand how a full stack application is structured, how authentication is handled, and how I can extend the application by adding new routes and modifying JWT payloads._
-
-## Acceptance Criteria
-
-1. The application should run successfully after following the installation steps.
-2. You should be able to test authentication and protected routes.
-3. You should be able to explain the structure and purpose of key files such as `models/index.js`, `models/user.js`, and the route definitions.
-4. You should be able to describe how to:
-   - Add a new API route (`/api/students`).
-   - Modify the JWT payload to include additional data.
+```
+config/       Sequelize database connection
+models/       Sequelize models (User, Post, Category) and associations
+routes/       Express route handlers (REST API, grouped by resource)
+utils/        Auth helpers (JWT signing/verification middleware)
+seeds/        Sample data and seeding script
+public/       Static front end (HTML/CSS/JS) served by Express
+server.js     App entry point
+```
 
 ## Getting Started
 
-### Installation Steps
+### Local Installation
 
-1. **Copy the `.env.example` file** and rename it to `.env`.
-2. **Open MySQL in the terminal:**
+1. **Clone the repository** and navigate into the project directory.
+2. **Copy the environment file:**
 
-```bash
-mysql -u root -p
-```
+   ```bash
+   cp .env.example .env
+   ```
 
-3. **Run the following command to set up the database:**
+   Then update `.env` with your MySQL credentials and a `JWT_SECRET` of your choice.
 
-```bash
-source db/schema.sql;
-```
+3. **Create the database:**
 
-4. **Exit MySQL**
+   ```bash
+   mysql -u root -p
+   source db/schema.sql;
+   quit;
+   ```
 
-```bash
-quit;
-```
+4. **Install dependencies:**
 
-5. **Update the .env file and set DB_PASSWORD to your MySQL password.**
-6. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm install
-```
+5. **Seed the database with sample posts:**
 
-7. **Seed the database with test data:**
+   ```bash
+   npm run seed
+   ```
 
-```bash
-npm run seed
-```
+6. **Run the application:**
 
-8. **Run the application**
+   ```bash
+   npm start
+   ```
 
-```bash
-npm start
-```
+7. **Visit the application in your browser:**
 
-9. **Open the application in your browser:**
+   ```
+   http://localhost:3001
+   ```
 
-```browser
-http://localhost:3001
-```
+### API Endpoints
+
+| Method | Endpoint | Description | Auth required |
+|---|---|---|---|
+| POST | `/api/users` | Register a new user | No |
+| POST | `/api/users/login` | Log in, returns a JWT | No |
+| POST | `/api/users/logout` | Log out | No |
+| GET | `/api/users/me` | Get the current logged-in user | Yes |
+| GET | `/api/posts` | Get all posts (optionally `?categoryId=`) | No |
+| GET | `/api/posts/:id` | Get a single post | No |
+| POST | `/api/posts` | Create a post | Yes |
+| PUT | `/api/posts/:id` | Update a post (owner only) | Yes |
+| DELETE | `/api/posts/:id` | Delete a post (owner only) | Yes |
+| GET | `/api/categories` | Get all categories | No |
+| POST | `/api/categories` | Create a category | Yes |
+| PUT | `/api/categories/:id` | Update a category | Yes |
+| DELETE | `/api/categories/:id` | Delete a category | Yes |
+
+## Deploying to Render
+
+1. Create an account on [Render](https://render.com/).
+2. Create a **MySQL database** (Render, PlanetScale, or another MySQL provider).
+3. Create a **Web Service** pointing at this repository:
+   - Build command: `npm install`
+   - Start command: `npm start`
+4. Add environment variables in the Render dashboard matching `.env.example`: `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `DB_DIALECT`, `DB_PORT`, `JWT_SECRET`.
+5. Deploy. Since the front end is served by the same Express app (`public/`), no separate static site is needed.
 
 ## Resources
 
+- [Render Deployment Guide](https://render.com/docs/deploy-an-express-app)
 - [Express Documentation](https://expressjs.com/)
 - [Sequelize Documentation](https://sequelize.org/)
-- [jsonwebtoken (JWT) Package](https://www.npmjs.com/package/jsonwebtoken)
+- [MySQL Documentation](https://dev.mysql.com/doc/)
