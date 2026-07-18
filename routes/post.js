@@ -1,11 +1,13 @@
 // create a new router
-const app = require("express").Router();
+const router = require("express").Router();
 
 // import the models
 const { Post } = require("../models/index");
 
+const { signToken, authMiddleware } = require("../utils/auth");
+
 // Route to add a new post
-app.post("/", async (req, res) => {
+router.post("/",authMiddleware, async (req, res) => {
   try {
     const { title, content, postedBy } = req.body;
     const post = await Post.create({ title, content, postedBy });
@@ -17,7 +19,7 @@ app.post("/", async (req, res) => {
 });
 
 // Route to get all posts
-app.get("/", async (req, res) => {
+router.get("/",authMiddleware, async (req, res) => {
   try {
     const posts = await Post.findAll();
 
@@ -27,7 +29,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get("/:id", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id);
     res.json(post);
@@ -37,12 +39,12 @@ app.get("/:id", async (req, res) => {
 });
 
 // Route to update a post
-app.put("/:id", async (req, res) => {
+router.put("/:id",authMiddleware, async (req, res) => {
   try {
     const { title, content, postedBy } = req.body;
     const post = await Post.update(
       { title, content, postedBy },
-      { where: { id: req.params.id } }
+      { where: { id: req.params.id } },
     );
     res.json(post);
   } catch (error) {
@@ -51,7 +53,7 @@ app.put("/:id", async (req, res) => {
 });
 
 // Route to delete a post
-app.delete("/:id", async (req, res) => {
+router.delete("/:id",authMiddleware, async (req, res) => {
   try {
     const post = await Post.destroy({ where: { id: req.params.id } });
     res.json(post);
@@ -61,4 +63,4 @@ app.delete("/:id", async (req, res) => {
 });
 
 // export the router
-module.exports = app;
+module.exports = router;
