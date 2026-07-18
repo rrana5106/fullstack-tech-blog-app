@@ -9,8 +9,14 @@ const { signToken, authMiddleware } = require("../utils/auth");
 // Route to add a new post
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { title, content, postedBy,categoryId } = req.body;
-    const post = await Post.create({ title, content, postedBy,categoryId,userId: req.user.id  });
+    const { title, content, postedBy, categoryId } = req.body;
+    const post = await Post.create({
+      title,
+      content,
+      postedBy,
+      categoryId,
+      userId: req.user.id,
+    });
 
     res.status(201).json(post);
   } catch (error) {
@@ -43,11 +49,20 @@ router.get("/:id", async (req, res) => {
 // Route to update a post
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
+    const post = await Post.findByPk(req.params.id);
+    if (!post) {
+      res.status(404).json({ message: "No User found with this id" });
+      return;
+    }
+    if (post.userId !== req.user.id) {
+      res.status(403).json({
+        message: "Don't proceed with update",
+      });
+      return;
+    }
+
     const { title, content, postedBy } = req.body;
-    const post = await Post.update(
-      { title, content, postedBy },
-      { where: { id: req.params.id } },
-    );
+    await post.update({ title, content, postedBy });
     res.json(post);
   } catch (error) {
     res.status(500).json({ error: "Error updating post" });
@@ -57,7 +72,20 @@ router.put("/:id", authMiddleware, async (req, res) => {
 // Route to delete a post
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
-    const post = await Post.destroy({ where: { id: req.params.id } });
+    const post = await Post.findByPk(req.params.id);
+    if (!post) {
+      res.status(404).json({ message: "No User found with this id" });
+      return;
+    }
+    if (post.userId !== req.user.id) {
+      res.status(403).json({
+        message: "Don't proceed with update",
+      });
+      return;
+    }
+
+    const { title, content, postedBy } = req.body;
+    await post.destroy();
     res.json(post);
   } catch (error) {
     res.status(500).json({ error: "Error deleting post" });
