@@ -31,11 +31,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const post = await Post.findByPk(req.params.id, {
-      attributes: {
-        exclude: ["password"],
-      },
-    });
+    const post = await Post.findByPk(req.params.id);
     res.json(post);
   } catch (error) {
     res.status(500).json({ error: "Error retrieving post" });
