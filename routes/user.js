@@ -5,7 +5,11 @@ const { signToken, authMiddleware } = require("../utils/auth");
 // Get current authenticated user
 router.get("/me", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findByPk(req.user.id, {
+      attributes: {
+        exclude: ["password"],
+      },
+    });
     if (!user) return res.status(401).json({ message: "Token expired" });
     return res.status(200).json({ user });
   } catch (err) {
@@ -17,7 +21,11 @@ router.get("/me", authMiddleware, async (req, res) => {
 router.get("/:id", async (req, res) => {
   console.log("looking for user", req.params.id);
   try {
-    const userData = await User.findByPk(req.params.id);
+    const userData = await User.findByPk(req.params.id, {
+      attributes: {
+        exclude: ["password"],
+      },
+    });
 
     if (!userData) {
       res.status(404).json({ message: "No User found with this id" });
@@ -32,7 +40,11 @@ router.get("/:id", async (req, res) => {
 
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: {
+        exclude: ["password"],
+      },
+    });
     res.status(200).json(users);
   } catch (err) {
     res.status(400).json(err);
@@ -44,15 +56,25 @@ router.post("/", async (req, res) => {
     const userData = await User.create(req.body);
 
     const token = signToken(userData);
-    res.status(200).json({ token, userData });
+    const safeUserData = userData.toJSON();
+    delete safeUserData.password;
+
+    res.status(200).json({ token, safeUserData });
   } catch (err) {
     res.status(400).json(err);
   }
 });
 
 // UDPATE the User record
-router.put("/:id", async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
   try {
+    
+    if (req.user.id !== Number(req.params.id)) {
+      res.status(403).json({
+        message: "Don't proceed with update",
+      });
+      return;
+    }
     const userData = await User.update(req.body, {
       where: {
         id: req.params.id,
@@ -90,7 +112,9 @@ router.post("/login", async (req, res) => {
     }
 
     const token = signToken(userData);
-    res.status(200).json({ token, userData });
+    const safeUserData = userData.toJSON();
+    delete safeUserData.password;
+    res.status(200).json({ token, safeUserData });
   } catch (err) {
     console.log(err);
     res.status(400).json(err);

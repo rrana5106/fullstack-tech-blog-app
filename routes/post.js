@@ -7,7 +7,7 @@ const { Post } = require("../models/index");
 const { signToken, authMiddleware } = require("../utils/auth");
 
 // Route to add a new post
-router.post("/",authMiddleware, async (req, res) => {
+router.post("/", authMiddleware, async (req, res) => {
   try {
     const { title, content, postedBy } = req.body;
     const post = await Post.create({ title, content, postedBy });
@@ -19,7 +19,7 @@ router.post("/",authMiddleware, async (req, res) => {
 });
 
 // Route to get all posts
-router.get("/",authMiddleware, async (req, res) => {
+router.get("/", authMiddleware, async (req, res) => {
   try {
     const posts = await Post.findAll();
 
@@ -31,7 +31,11 @@ router.get("/",authMiddleware, async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const post = await Post.findByPk(req.params.id);
+    const post = await Post.findByPk(req.params.id, {
+      attributes: {
+        exclude: ["password"],
+      },
+    });
     res.json(post);
   } catch (error) {
     res.status(500).json({ error: "Error retrieving post" });
@@ -39,7 +43,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Route to update a post
-router.put("/:id",authMiddleware, async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const { title, content, postedBy } = req.body;
     const post = await Post.update(
@@ -53,7 +57,7 @@ router.put("/:id",authMiddleware, async (req, res) => {
 });
 
 // Route to delete a post
-router.delete("/:id",authMiddleware, async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const post = await Post.destroy({ where: { id: req.params.id } });
     res.json(post);
