@@ -1,12 +1,12 @@
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
-const secret = process.env.JWT_SECRET;
+const secret = 'mysecretssshhhhhhh';
 const expiration = '2h';
 
 const authMiddleware = (req, res, next) => {
 
   let token = req.body.token || req.query.token || req.headers.authorization;
+  console.log('token: ' + token);
 
   if (req.headers.authorization) {
     token = token.split(' ').pop().trim();
@@ -22,6 +22,7 @@ const authMiddleware = (req, res, next) => {
     req.user = data;
     next();
   } catch (err) {
+    console.log('Invalid token');
     res.status(400).json({ message: 'Invalid token: ' + err.message });
   }
 
@@ -33,7 +34,8 @@ const signToken = (user) => {
   const payload = {
     id: user.id,
     email: user.email,
-    username: user.username,
+    first_name: user.first_name,
+    last_name: user.last_name,
   };
   return jwt.sign({ data: payload }, secret, { expiresIn: expiration });
 }

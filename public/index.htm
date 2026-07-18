@@ -26,19 +26,12 @@
         <h2>Welcome</h2>
         <button onclick="logout()">Logout</button>
         <hr>
-        <h2 id="post-form-title">Create a Post</h2>
+        <h2>Create a Post</h2>
         <input type="text" id="post-title" placeholder="Title">
         <textarea id="post-content" placeholder="Content"></textarea>
-        <select id="post-category">
-            <option value="">No category</option>
-        </select>
-        <button onclick="savePost()">Submit Post</button>
-        <button id="cancel-edit-btn" class="hidden" onclick="cancelEdit()">Cancel Edit</button>
+        <button onclick="createPost()">Submit Post</button>
         <hr>
         <h2>Posts</h2>
-        <select id="filter-category" onchange="fetchPosts()">
-            <option value="">All categories</option>
-        </select>
         <button onclick="fetchPosts()">Load Posts</button>
         <div id="posts"></div>
     </div>

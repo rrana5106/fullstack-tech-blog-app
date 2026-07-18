@@ -2,12 +2,10 @@ const router = require("express").Router();
 const { User } = require("../models");
 const { signToken, authMiddleware } = require("../utils/auth");
 
-const PUBLIC_ATTRIBUTES = { exclude: ["password"] };
-
 // Get current authenticated user
 router.get("/me", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id, { attributes: PUBLIC_ATTRIBUTES });
+    const user = await User.getOne(req.user.id);
     if (!user) return res.status(401).json({ message: "Token expired" });
     return res.status(200).json({ user });
   } catch (err) {
@@ -17,8 +15,9 @@ router.get("/me", authMiddleware, async (req, res) => {
 
 // GET the User record
 router.get("/:id", async (req, res) => {
+  console.log("looking for user", req.params.id);
   try {
-    const userData = await User.findByPk(req.params.id, { attributes: PUBLIC_ATTRIBUTES });
+    const userData = await User.getOne(req.params.id);
 
     if (!userData) {
       res.status(404).json({ message: "No User found with this id" });
@@ -33,7 +32,7 @@ router.get("/:id", async (req, res) => {
 
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const users = await User.findAll({ attributes: PUBLIC_ATTRIBUTES });
+    const users = await User.findAll();
     res.status(200).json(users);
   } catch (err) {
     res.status(400).json(err);
@@ -45,29 +44,27 @@ router.post("/", async (req, res) => {
     const userData = await User.create(req.body);
 
     const token = signToken(userData);
-    const { password, ...safeUserData } = userData.toJSON();
-    res.status(200).json({ token, userData: safeUserData });
+    res.status(200).json({ token, userData });
   } catch (err) {
     res.status(400).json(err);
   }
 });
 
-// UPDATE the User record (only the account owner may update it)
-router.put("/:id", authMiddleware, async (req, res) => {
+// UDPATE the User record
+router.put("/:id", async (req, res) => {
   try {
-    if (req.user.id !== Number(req.params.id)) {
-      return res.status(403).json({ message: "You can only update your own account" });
-    }
+    const userData = await User.update(req.body, {
+      where: {
+        id: req.params.id,
+      },
+    });
 
-    const user = await User.findByPk(req.params.id);
-    if (!user) {
+    if (!userData) {
       res.status(404).json({ message: "No User found with this id" });
       return;
     }
 
-    await user.update(req.body);
-    const { password, ...safeUserData } = user.toJSON();
-    res.status(200).json(safeUserData);
+    res.status(200).json(userData);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -93,9 +90,9 @@ router.post("/login", async (req, res) => {
     }
 
     const token = signToken(userData);
-    const { password, ...safeUserData } = userData.toJSON();
-    res.status(200).json({ token, userData: safeUserData });
+    res.status(200).json({ token, userData });
   } catch (err) {
+    console.log(err);
     res.status(400).json(err);
   }
 });

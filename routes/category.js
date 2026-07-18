@@ -3,37 +3,34 @@ const app = require("express").Router();
 
 // import the models
 const { Category } = require("../models/index");
-const { authMiddleware } = require("../utils/auth");
 
-// Route to add a new category
-app.post("/", authMiddleware, async (req, res) => {
+// Route to add a new post
+app.post("/", async (req, res) => {
   try {
     const { category_name } = req.body;
     const category = await Category.create({ category_name });
     res.status(201).json(category);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Error adding category", error: error });
   }
 });
 
-// Route to get all categories
+// Route to get all posts
 app.get("/", async (req, res) => {
   try {
+    console.log("Getting all categories");
     const categories = await Category.findAll();
+    console.log(categories);
     res.json(categories);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving categories", error: error });
+    res.status(500).json({ message: "Error adding categories", error: error });
   }
 });
 
 app.get("/:id", async (req, res) => {
   try {
-    const category = await Category.findByPk(req.params.id);
-
-    if (!category) {
-      return res.status(404).json({ message: "No category found with this id" });
-    }
-
+    const category = await Post.findByPk(req.params.id);
     res.json(category);
   } catch (error) {
     res.status(500).json({ error: "Error retrieving category" });
@@ -41,21 +38,21 @@ app.get("/:id", async (req, res) => {
 });
 
 // Route to update a category
-app.put("/:id", authMiddleware, async (req, res) => {
+app.put("/:id", async (req, res) => {
   try {
-    const { category_name } = req.body;
-    const category = await Category.update(
-      { category_name },
+    const { name } = req.body;
+    const post = await Category.update(
+      { name },
       { where: { id: req.params.id } }
     );
-    res.json(category);
+    res.json(post);
   } catch (error) {
     res.status(500).json({ error: "Error updating category" });
   }
 });
 
 // Route to delete a category
-app.delete("/:id", authMiddleware, async (req, res) => {
+app.delete("//:id", async (req, res) => {
   try {
     const category = await Category.destroy({ where: { id: req.params.id } });
     res.json(category);
