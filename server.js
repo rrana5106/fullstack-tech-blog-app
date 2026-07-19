@@ -30,4 +30,5 @@ app.use(routes);
 // Sync database
 sequelize.sync({ force: rebuild }).then(() => {
   app.listen(PORT, () => console.log("Now listening"));
+  console.log(`Server running on http://localhost:${PORT}`);
 });

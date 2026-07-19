@@ -153,7 +153,10 @@ function loadCategories() {
 
       const postCategorySelect = document.getElementById("post-category");
       const categoryFilterSelect = document.getElementById("category-filter");
-
+      const allOption = document.createElement("option");
+      allOption.value = "";
+      allOption.textContent = "All Categories";
+      categoryFilterSelect.appendChild(allOption);
       categories.forEach((category) => {
         const option = document.createElement("option");
         option.value = category.id;
