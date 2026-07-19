@@ -68,25 +68,24 @@ router.post("/", async (req, res) => {
 // UDPATE the User record
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
-    
     if (req.user.id !== Number(req.params.id)) {
       res.status(403).json({
         message: "Don't proceed with update",
       });
       return;
     }
-    const userData = await User.update(req.body, {
-      where: {
-        id: req.params.id,
-      },
-    });
+    const user = await User.findByPk(req.params.id);
 
-    if (!userData) {
+    if (!user) {
       res.status(404).json({ message: "No User found with this id" });
       return;
     }
 
-    res.status(200).json(userData);
+    await user.update(req.body);
+    const safeUserData = user.toJSON();
+    delete safeUserData.password;
+
+    res.status(200).json(safeUserData);
   } catch (err) {
     res.status(500).json(err);
   }
