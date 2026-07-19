@@ -1,4 +1,5 @@
 let token = localStorage.getItem("authToken");
+let currentUserId = null;
 
 function register() {
   const username = document.getElementById("username").value;
@@ -34,6 +35,7 @@ function login() {
     .then((data) => {
       // Save the token in the local storage
       if (data.token) {
+        currentUserId = data.safeUserData.id;
         localStorage.setItem("authToken", data.token);
         token = data.token;
 
@@ -66,12 +68,19 @@ function logout() {
     document.getElementById("app-container").classList.add("hidden");
   });
 }
+function deletePost(id) {
+  fetch(`/api/posts/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  }).then(() => {
+    fetchPosts();
+  });
+}
 
 function fetchPosts() {
   const categoryId = document.getElementById("category-filter").value;
 
   const url = categoryId ? `/api/posts?categoryId=${categoryId}` : "/api/posts";
-  
 
   fetch(url, {
     method: "GET",
@@ -82,12 +91,16 @@ function fetchPosts() {
       const postsContainer = document.getElementById("posts");
       postsContainer.innerHTML = "";
       posts.forEach((post) => {
+        const buttons =
+          post.userId === currentUserId
+            ? `<button onclick="deletePost(${post.id})">Delete</button> <button onclick="editPost(${post.id})">Edit</button>`
+            : "";
         const div = document.createElement("div");
         div.innerHTML = `<h3>${post.title}</h3><p>${
           post.content
         }</p><small>By: ${post.postedBy} on ${new Date(
           post.createdOn,
-        ).toLocaleString()}</small>`;
+        ).toLocaleString()}</small>${buttons}`;
         postsContainer.appendChild(div);
       });
     });
@@ -104,6 +117,25 @@ function createPost() {
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ title, content, postedBy: "User", categoryId }),
+  })
+    .then((res) => res.json())
+    .then(() => {
+      alert("Post created successfully");
+      fetchPosts();
+    });
+}
+
+function editPost(id) {
+  const title = prompt("New title:");
+  const content = prompt("New content:");
+
+  fetch(`/api/posts/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ title, content }),
   })
     .then((res) => res.json())
     .then(() => {
