@@ -19,7 +19,6 @@ router.get("/me", authMiddleware, async (req, res) => {
 
 // GET the User record
 router.get("/:id", async (req, res) => {
-  console.log("looking for user", req.params.id);
   try {
     const userData = await User.findByPk(req.params.id, {
       attributes: {
@@ -68,6 +67,7 @@ router.post("/", async (req, res) => {
 // UDPATE the User record
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
+    // req.params.id is a string, but req.user.id is a int, so we convert before comparing
     if (req.user.id !== Number(req.params.id)) {
       res.status(403).json({
         message: "Don't proceed with update",
@@ -80,7 +80,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
       res.status(404).json({ message: "No User found with this id" });
       return;
     }
-
+    // using user.update() here (not User.update()) so Sequelize's beforeUpdate hook actually runs and hashes the password
     await user.update(req.body);
     const safeUserData = user.toJSON();
     delete safeUserData.password;

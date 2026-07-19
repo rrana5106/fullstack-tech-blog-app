@@ -49,6 +49,7 @@ router.get("/:id", async (req, res) => {
 // Route to update a post
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
+    
     const post = await Post.findByPk(req.params.id);
     if (!post) {
       res.status(404).json({ message: "No User found with this id" });
