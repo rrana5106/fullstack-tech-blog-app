@@ -4,7 +4,7 @@ function register() {
   const username = document.getElementById("username").value;
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-  fetch("http://localhost:3001/api/users", {
+  fetch("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, email, password }),
@@ -25,7 +25,7 @@ function register() {
 function login() {
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
-  fetch("http://localhost:3001/api/users/login", {
+  fetch("/api/users/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -55,7 +55,7 @@ function login() {
 }
 
 function logout() {
-  fetch("http://localhost:3001/api/users/logout", {
+  fetch("/api/users/logout", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   }).then(() => {
@@ -68,7 +68,12 @@ function logout() {
 }
 
 function fetchPosts() {
-  fetch("http://localhost:3001/api/posts", {
+  const categoryId = document.getElementById("category-filter").value;
+
+  const url = categoryId ? `/api/posts?categoryId=${categoryId}` : "/api/posts";
+  
+
+  fetch(url, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -81,7 +86,7 @@ function fetchPosts() {
         div.innerHTML = `<h3>${post.title}</h3><p>${
           post.content
         }</p><small>By: ${post.postedBy} on ${new Date(
-          post.createdOn
+          post.createdOn,
         ).toLocaleString()}</small>`;
         postsContainer.appendChild(div);
       });
@@ -91,13 +96,14 @@ function fetchPosts() {
 function createPost() {
   const title = document.getElementById("post-title").value;
   const content = document.getElementById("post-content").value;
-  fetch("http://localhost:3001/api/posts", {
+  const categoryId = document.getElementById("post-category").value;
+  fetch("/api/posts", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ title, content, postedBy: "User" }),
+    body: JSON.stringify({ title, content, postedBy: "User", categoryId }),
   })
     .then((res) => res.json())
     .then(() => {
@@ -105,3 +111,28 @@ function createPost() {
       fetchPosts();
     });
 }
+
+function loadCategories() {
+  fetch("/api/categories")
+    .then((res) => res.json())
+    .then((categories) => {
+      // for each category, create an <option> and append it
+      // to BOTH #post-category and #category-filter
+
+      const postCategorySelect = document.getElementById("post-category");
+      const categoryFilterSelect = document.getElementById("category-filter");
+
+      categories.forEach((category) => {
+        const option = document.createElement("option");
+        option.value = category.id;
+        option.textContent = category.category_name;
+        postCategorySelect.appendChild(option);
+
+        const option2 = document.createElement("option");
+        option2.value = category.id;
+        option2.textContent = category.category_name;
+        categoryFilterSelect.appendChild(option2);
+      });
+    });
+}
+loadCategories();
